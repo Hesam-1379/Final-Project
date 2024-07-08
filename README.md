@@ -1,1 +1,187 @@
 # Final-Project
+
+#This Python code is a Tkinter-based GUI application for user management, including functionalities for submitting new users, logging in, logging out, deleting accounts, viewing login counts, and listing users. Below is a deeper explanation of the key parts of your code:
+
+1. Imports and Global Variables
+python
+Copy code
+import json
+import tkinter as Tk
+
+islogin = False
+json: For reading and writing user data.
+tkinter as Tk: For creating the GUI.
+islogin: A global variable to track the login state.
+2. Submit Function
+python
+Copy code
+def submit():
+    user = input_new_user.get()
+    passw = input_new_passw.get()
+
+    with open("info.json") as f:
+        users_dct = json.load(f)
+    if user in users_dct:
+        output_sub.configure(text="Username exists, already!!", fg="red")
+    elif len(passw) < 5 or passw.isalpha():
+        output_sub.configure(text="Please correct password", fg="red")
+    else:
+        users_dct[user] = passw
+        with open("info.json", "w") as f:
+            json.dump(users_dct, f)
+        output_sub.configure(text="Submit done!", fg="green")
+Retrieves username and password from input fields.
+Loads existing users from info.json.
+Checks if the username already exists or if the password is invalid.
+If valid, saves the new user to info.json.
+3. Login Function
+python
+Copy code
+def login():
+    global islogin
+    user = input_user.get()
+    passw = input_passw.get()
+    if islogin:
+        output.configure(text="You're logged in, already!", fg="red")
+        return
+    else:
+        with open("info.json") as f:
+            users_dct = json.load(f)
+        if user in users_dct and users_dct[user] == passw:
+            output.configure(text="Welcome to your account!", fg="green")
+            islogin = user
+            logincount()
+        else:
+            output.configure(text="Either wrong username or password!!", fg="red")
+Retrieves username and password from input fields.
+Checks if the user is already logged in.
+Validates credentials against info.json.
+If valid, logs in the user and calls logincount().
+4. Logout Function
+python
+Copy code
+def logout():
+    global islogin
+    if not islogin:
+        output_logout.configure(text="You're logged out, already!", fg="red")
+    else:
+        confirm = input("Are you sure you that want to logout from your account? Yes/No")
+        if confirm == "Yes":
+            islogin = False
+            output_logout.configure(text="Logged out successfully!", fg="green")
+        else:
+            output_logout.configure(text="Logout canceled by user.", fg="red")
+Checks if the user is logged in.
+Asks for confirmation to log out.
+Logs out the user if confirmed.
+5. Delete Function
+python
+Copy code
+def delete():
+    global islogin
+    if not islogin:
+        output_dlt.configure(text="You need to login first.", fg="red")
+    else:
+        with open("info.json") as f:
+            users_dct = json.load(f)
+        confirm = input("Are you sure you that want to delete your account? Yes/No")
+        if confirm == "Yes":
+            users_dct.pop(islogin)
+            with open("info.json", "w") as f:
+                json.dump(users_dct, f)
+            output_dlt.configure(text="Account deleted successfully!", fg="green")
+            islogin = False
+        else:
+            output_dlt.configure(text="Delete canceled by user.", fg="red")
+Checks if the user is logged in.
+Asks for confirmation to delete the account.
+Deletes the account from info.json if confirmed.
+6. Login Count Function
+python
+Copy code
+def logincount():
+    global islogin
+    with open("logincount.json") as f:
+        count_dct = json.load(f)
+    if islogin in count_dct:
+        count_dct[islogin] += 1
+    else:
+        count_dct[islogin] = 1
+    with open("logincount.json", "w") as f:
+        json.dump(count_dct, f)
+Increments the login count for the current user in logincount.json.
+7. Show Login Count Function
+python
+Copy code
+def showlogincount():
+    with open("logincount.json") as f:
+        count_dct = json.load(f)
+    if islogin in count_dct:
+        count = count_dct[islogin]
+        output_count.configure(text=f"Login count for {islogin}: {count}", fg="green")
+    else:
+        output_count.configure(text="No login record found.", fg="red")
+Displays the login count for the current user.
+8. Users List Function
+python
+Copy code
+def userslist():
+    with open("info.json") as f:
+        userslist = json.load(f)
+    usrs_lst = str(list(userslist.keys()))
+    lst_box.insert("end", usrs_lst)
+Lists all usernames from info.json.
+9. Tkinter GUI Setup
+python
+Copy code
+win = Tk.Tk()
+win.title("Mid term project")
+win.geometry("950x900")
+
+# Submit Section
+Tk.Label(win, text="Submit").pack()
+Tk.Label(win, text="New username:").pack()
+input_new_user = Tk.Entry(win, width=40)
+input_new_user.pack()
+Tk.Label(win, text="New password:").pack()
+input_new_passw = Tk.Entry(win, width=40)
+input_new_passw.pack()
+output_sub = Tk.Label(win, text="")
+output_sub.pack()
+Tk.Button(win, text="Submit", command=submit).pack()
+
+# Login Section
+Tk.Label(win, text="Login").pack()
+Tk.Label(win, text="Username:").pack()
+input_user = Tk.Entry(win, width=40)
+input_user.pack()
+Tk.Label(win, text="Password:").pack()
+input_passw = Tk.Entry(win, width=40)
+input_passw.pack()
+output = Tk.Label(win, text="")
+output.pack()
+Tk.Button(win, text="Login", command=login).pack()
+
+# Login Count, Delete, Logout
+output_count = Tk.Label(win, text="")
+output_count.pack()
+Tk.Button(win, text="Login count", command=showlogincount).pack()
+output_dlt = Tk.Label(win, text="")
+output_dlt.pack()
+Tk.Button(win, text="Delete", command=delete).pack()
+output_logout = Tk.Label(win, text="")
+output_logout.pack()
+Tk.Button(win, text="Logout", command=logout).pack()
+
+# Users List
+output_userslist = Tk.Label(win, text="")
+output_userslist.pack()
+Tk.Button(win, text="Users list", command=userslist).pack()
+lst_box = Tk.Listbox(win, height=20)
+lst_box.pack()
+
+# Mainloop
+win.mainloop()
+Sets up the Tkinter window and layout for each section (Submit, Login, Login Count, Delete, Logout, Users List).
+Summary
+This code creates a user interface with Tkinter to manage user accounts, allowing for submission of new accounts, login/logout functionality, deletion of accounts, and viewing a list of users along with their login counts. The user data is stored in info.json, and login counts are stored in logincount.json. ​
